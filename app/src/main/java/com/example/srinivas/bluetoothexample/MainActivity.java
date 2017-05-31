@@ -14,13 +14,26 @@ import android.widget.Button;
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "MainActivity";
 
+    // Done with only two videos in the bluetooth example
     BluetoothAdapter mBluetoothAdapter;
+    private Button btnDiscoverableOnOrOff;
 
-    // Create a BroadcastReceiver for ACTION_FOUND.
+    /**
+     * Create a BroadcastReceiver for ACTION_FOUND.
+     *
+     * This method would create a broadcast receiver which would find the changes in the
+     * state of the bluetooth adapter, there can be four different state changes
+     * 1. State ON
+     * 2. State Turning ON
+     * 3. State OFF
+     * 4. State Turning OFF
+     */
     private final BroadcastReceiver mBroadcastReceiver1 = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (action.equals(mBluetoothAdapter.ACTION_STATE_CHANGED)) {
+                // capturing the state from the broadcast receiver every time the state is changed by click
+                // of the button
                 final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, mBluetoothAdapter.ERROR);
 
                 switch (state) {
@@ -41,6 +54,40 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * This method basically helps us in getting the different modes of discoverability
+     */
+    private final BroadcastReceiver mBroadcastReceiver2 = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(mBluetoothAdapter.ACTION_SCAN_MODE_CHANGED)) {
+                // capturing the state from the broadcast receiver every time the mode is changed by click
+                // of the button of discoverability
+                final int mode = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, mBluetoothAdapter.ERROR);
+
+                switch (mode) {
+                    // device is in discoverable mode
+                    case BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE:
+                        Log.d(TAG, "mBroadcastReceiver2: Discoverability enabled.");
+                        break;
+                    // device is not in discoverable mode
+                    case BluetoothAdapter.SCAN_MODE_CONNECTABLE:
+                        Log.d(TAG, "mBroadcastReceiver2: Discoverability disabled. Able to receive connections.");
+                        break;
+                    case BluetoothAdapter.SCAN_MODE_NONE:
+                        Log.d(TAG, "mBroadcastReceiver2: Discoverability disabled. Not able to receive connections.");
+                        break;
+                    case BluetoothAdapter.STATE_CONNECTING:
+                        Log.d(TAG, "mBroadcastReceiver2: Connecting...");
+                        break;
+                    case BluetoothAdapter.STATE_CONNECTED:
+                        Log.d(TAG, "mBroadcastReceiver2: Connected!");
+                        break;
+                }
+            }
+        }
+    };
+
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy: called");
@@ -54,8 +101,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Button btnOnOrOff = (Button) findViewById(R.id.btnOnOrOff);
-
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        btnDiscoverableOnOrOff = (Button) findViewById(R.id.btnDiscoverabilityOnOrOff);
 
         btnOnOrOff.setOnClickListener(new View.OnClickListener() {
 
@@ -84,8 +132,8 @@ public class MainActivity extends AppCompatActivity {
         // This means our bluetooth is not enabled Or off.
         if(!mBluetoothAdapter.isEnabled()) {
             Log.d(TAG, "enableDisableBT: enabling BT.");
-            Intent enbleBTIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivity(enbleBTIntent);
+            Intent enableBTIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivity(enableBTIntent);
 
             IntentFilter btIntentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
             registerReceiver(mBroadcastReceiver1, btIntentFilter);
@@ -99,6 +147,16 @@ public class MainActivity extends AppCompatActivity {
             IntentFilter btIntentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
             registerReceiver(mBroadcastReceiver1, btIntentFilter);
         }
+    }
 
+    public void btnEnableDisable_Discoverable(View view) {
+        Log.d(TAG, "btnEnableDisable_Discoverable: Making device discoverable for 300 seconds");
+
+        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+        startActivity(discoverableIntent);
+
+        IntentFilter discoverableIntentFiler = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
+        registerReceiver(mBroadcastReceiver2, discoverableIntentFiler);
     }
 }

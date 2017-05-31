@@ -20,4 +20,13 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
+    <Button
+        android:text="Discoverability ON/ OFF"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnOnOrOff"
+        android:layout_marginTop="12dp"
+        android:id="@+id/btnDiscoverabilityOnOrOff"
+        android:onClick="btnEnableDisable_Discoverable"/>
+
 </RelativeLayout>
